@@ -45,6 +45,11 @@ export abstract class PaginationEmbed extends EmbedBuilder {
 	public images: string[];
 
 	/**
+	 * The thumbnails to paginate through.
+	 */
+	public thumbnails: string[];
+
+	/**
 	 * The descriptions to paginate through.
 	 */
 	public descriptions: string[];
@@ -237,6 +242,7 @@ export abstract class PaginationEmbed extends EmbedBuilder {
 			}
 		};
 		this.images = [];
+		this.thumbnails = [];
 		this.descriptions = [];
 		this.embeds = [];
 		this.actionRows = [];
@@ -414,6 +420,39 @@ export abstract class PaginationEmbed extends EmbedBuilder {
 	}
 
 	/**
+	 * Sets the pagination thumbnails.
+	 *
+	 * @param thumbnails - The thumbnails to set
+	 * @returns
+	 * @example
+	 * ```javascript
+	 * const pagination = new Pagination(interaction)
+	 *  .setThumbnails(["1st image", "2nd image", "3rd image"]);
+	 * ```
+	 */
+	public setThumbnails(...thumbnails: RestOrArray<string>): this {
+		this.thumbnails = normalizeArray(thumbnails);
+		return this;
+	}
+
+	/**
+	 * Adds multiple pagination thumbnails.
+	 *
+	 * @param thumbnails - The thumbnails to set
+	 * @returns
+	 * @example
+	 * ```javascript
+	 * const pagination = new Pagination(interaction)
+	 *  .setThumbnails(["1st image", "2nd image", "3rd image"])
+	 *  .addThumbnails(["4st image", "5nd image", "6rd image"]);
+	 * ```
+	 */
+	public addThumbnails(...thumbnails: RestOrArray<string>): this {
+		this.thumbnails.push(...normalizeArray(thumbnails));
+		return this;
+	}
+
+	/**
 	 * Sets the pagination descriptions.
 	 *
 	 * @param descriptions - The descriptions to set
@@ -449,7 +488,7 @@ export abstract class PaginationEmbed extends EmbedBuilder {
 	/**
 	 * Sets the pagination embeds.
 	 * Note: if you set this then all other pagination methods and embed methods will be ignored
-	 * i.e., descriptions, images, fields, also the embed properties like title, footer and all
+	 * i.e., descriptions, images, thumbnails, fields, also the embed properties like title, footer and all
 	 *
 	 * @param embeds - The embeds to set
 	 * @param template - A template function that will be called for each embed.
@@ -831,6 +870,9 @@ export abstract class PaginationEmbed extends EmbedBuilder {
 		if (this.images.length) {
 			this.setImage(this.images[pageNumber - 1]);
 		}
+		else if (this.thumbnails.length) {
+			this.setThumbnail(this.thumbnails[pageNumber - 1]);
+		}
 
 		// TODO: remove null from content in a next major version. Djs changed the typings in a minor version.
 		this.payload.content = (Array.isArray(this.contents) ? this.contents[this.currentPage - 1] : this.contents) ?? undefined;
@@ -881,7 +923,7 @@ export abstract class PaginationEmbed extends EmbedBuilder {
 		}
 
 		this.totalEntry =
-			this.embeds.length || Math.max(this.descriptions.length, this.images.length, this.fieldPaginate ? this.rawFields.length : 0);
+			this.embeds.length || Math.max(this.descriptions.length, this.images.length, this.thumbnails.length, this.fieldPaginate ? this.rawFields.length : 0);
 		this.totalPages = Math.ceil(this.totalEntry / this.limit);
 		this._readyPayloads();
 		this.goToPage(this.currentPage);
